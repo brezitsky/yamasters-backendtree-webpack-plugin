@@ -10,7 +10,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 	// let _this = this;
 
 	compiler.plugin('done', () => {
-		console.log('\n\n\n\n\n--------------------------------------------');
+		console.log('\n--------------------------------------------');
 
 		try {
 			let dist = fs.readdirSync(this.options.from);
@@ -79,7 +79,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 						indent_size: 1,
 						sep: '\n'
 					})
-					
+
 					fs.writeFileSync(url, content);
 					console.log(`File ${url} done!`);
 				}
@@ -91,7 +91,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 		}
 
 
-		console.log('\n\n\n\n\n--------------------------------------------');
+		console.log('\n--------------------------------------------');
 	});
 };
 
