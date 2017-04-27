@@ -4,7 +4,7 @@ HTML Webpack Plugin
 [![NPM](https://nodei.co/npm/yamasters-backendtree-webpack-plugin.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/yamasters-backendtree-webpack-plugin/)
 
 This is a [webpack](http://webpack.github.io/) plugin that simplifies creation
-of development files for Yamasters backend team.
+of development files for [Yamasters](https://yamasters.com/en/) backend team.
 This plugin creates *.php files with auto includes.
 
 Maintainer: vtlk [@vtlk7](http://telegram.me/vtlk7)

@@ -1,15 +1,33 @@
 {
-  "name": "yamasters-backendtree-webpack-plugin",
-  "version": "1.0.1",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "vtlk",
-  "license": "ISC",
-  "dependencies": {
-    "fs-extra": "^2.1.2",
-    "pretty": "^2.0.0"
-  }
+	"name": "yamasters-backendtree-webpack-plugin",
+	"version": "1.0.1",
+	"description": "Webpack plugin for creation file tree for Yamasters backend team",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"webpack",
+		"plugin",
+		"php",
+		"yamasters"
+	],
+	"author": {
+		"name": "vtlk",
+		"email": "vtlk2012@gmail.com",
+		"url": "http://telegram.me/vtlk7"
+	},
+	"bugs": {
+		"url": "https://github.com/brezitsky/yamasters-backendtree-webpack-plugin/issues",
+		"email": "vtlk2012@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/brezitsky/yamasters-backendtree-webpack-plugin.git"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"fs-extra": "^2.1.2",
+		"pretty": "^2.0.0"
+	}
 }
