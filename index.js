@@ -56,7 +56,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 							// щось пішло не так
 
 							// все гуд
-							if(way.length === 1) {
+							/*if(way.length === 1) {*/
 								let p = way[0].replace('<!-- ', '');
 								p = p.replace(' -->', '');
 								// let content = fs.readFileSync(path.join(this.options.from, p));
@@ -65,10 +65,10 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 								// console.log(path.join(this.options.to, p), path.normalize(this.options.to, p));
 								fs.outputFileSync(path.join(this.options.to, p), block);
 							}
-							// не гуд
+							/*// не гуд
 							else {
 								console.log(`Error, path array length: ${path.length}`);
-							}
+							}*/
 						})
 					}
 				}
