@@ -64,7 +64,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 
 								// console.log(path.join(this.options.to, p), path.normalize(this.options.to, p));
 								fs.outputFileSync(path.join(this.options.to, p), block);
-							}
+							/*}*/
 							/*// не гуд
 							else {
 								console.log(`Error, path array length: ${path.length}`);
