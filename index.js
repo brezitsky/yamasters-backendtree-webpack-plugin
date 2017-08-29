@@ -1,4 +1,5 @@
-const fs = require('fs-extra')
+const fse = require('fs-extra')
+const fs = require('fs')
 const path = require('path')
 const pretty = require('pretty')
 
@@ -13,9 +14,10 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 		console.log('\n--------------------------------------------');
 
 		try {
-			let dist = fs.readdirSync(this.options.from);
+			let dist = fse.readdirSync(this.options.from);
 			// console.log(dist);
 
+			let level2Paths = [];
 
 			// перебираєм папку з побудованим проектом (тут ми шукаєм штмл-файли,які містяться в корні білда)
 			dist.forEach(item => {
@@ -26,7 +28,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 
 				// якщо папка - то просто копіюємо її рекурсивно
 				if(stats.isDirectory()) {
-					fs.copySync(itemPathFrom, itemPathTo)
+					fse.copySync(itemPathFrom, itemPathTo)
 				}
 
 				// якщо файл, то починаєм з ним працювати
@@ -34,62 +36,101 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					// console.log(itemPathTo);
 
 					// копіюєм штмл-файл у файл пхп
-					fs.copySync(itemPathFrom, itemPathTo.replace(/\.html$/, '.php'))
+					fse.copySync(itemPathFrom, itemPathTo.replace(/\.html$/, '.php'))
 
 					// читаєм новостворений файл
-					let file = fs.readFileSync(itemPathTo.replace(/\.html$/, '.php')).toString();
+					let file = fse.readFileSync(itemPathTo.replace(/\.html$/, '.php')).toString();
 
-					// шукаєм блоки імпортованих файлів
-					let blocks = file.match(/<!--#BEGIN#-->([\s\S]*?)<!--#END#-->/g);
-					// console.log(blocks);
+					let timeStamps = file.match(/<!-- #TIME=\d*# -->/g);
 
-					// перебираєм всі блоки імпорту на сторінці
-					if(blocks.length) {
 
-						blocks.forEach(block => {
+					timeStamps.map(stamp => {
+						// console.log(stamp);
+						let time = stamp.replace('<!-- #TIME=', '');
+						time = time.replace('# -->', '');
 
-							// в кожному блоці імпорту шукаєм назву файла, який інклудиться
-							let way = block.match(/<!--\s([\s\S]*?)\s-->/g);
-							// console.log(typeof way, way);
+						let regexp = new RegExp(`<!--#BEGIN-${time}#-->([\\s\\S]*?)<!--#END-${time}#-->`, 'g')
 
-							// way - це масив. Якщо в ньому більш ніж 1 елемент, то
-							// щось пішло не так
+						// шукаєм блоки імпортованих файлів
+						// let blocks = file.match(/<!--#BEGIN-\d*#-->([\s\S]*?)<!--#END-\d*#-->/g);
+						let blocks = file.match(regexp);
+						// console.log(blocks);
 
-							// все гуд
-							/*if(way.length === 1) {*/
-								let p = way[0].replace('<!-- ', '');
-								p = p.replace(' -->', '');
-								// let content = fs.readFileSync(path.join(this.options.from, p));
-								p = p.replace(/\.html$/, '.php');
+						// перебираєм всі блоки імпорту на сторінці
+						if(blocks.length) {
 
-								// console.log(path.join(this.options.to, p), path.normalize(this.options.to, p));
-								fs.outputFileSync(path.join(this.options.to, p), block);
-							/*}*/
-							/*// не гуд
-							else {
-								console.log(`Error, path array length: ${path.length}`);
-							}*/
-						})
-					}
+							blocks.forEach(block => {
+
+								// в кожному блоці імпорту шукаєм назву файла, який інклудиться
+								let way = block.match(/<!--\s\/includes\/.*\.html\s-->/g);
+								// console.log(way);
+
+
+								// все гуд
+								if(way.length) {
+									let p = way[0].replace('<!-- ', '');
+									p = p.replace(' -->', '');
+									// let content = fs.readFileSync(path.join(this.options.from, p));
+									p = p.replace(/\.html$/, '.php');
+
+									/*
+									замінюєм коменти першого рівня на пусті рядки, щоб можна було
+									відокремити всередині кожного інклуда ще інклуди
+									*/
+									block = block.replace(new RegExp(`<!--#BEGIN-${time}#-->`, 'g'), '');
+									block = block.replace(new RegExp(way[0], 'g'), '');
+									block = block.replace(new RegExp(`<!-- #TIME=${time}# -->`, 'g'), '');
+									block = block.replace(new RegExp(`<!--#END-${time}#-->`, 'g'), '');
+
+									block = block.replace(/url\("img\//g, 'url("<?=SITE_TEMPLATE_PATH?>/img/');
+									block = block.replace(/url\('img\//g, "url('<?=SITE_TEMPLATE_PATH?>/img/");
+
+									if(way[1]) {
+										level2Paths.push(p);
+									}
+									// console.log(path.join(this.options.to, p), path.normalize(this.options.to, p));
+									fse.outputFileSync(path.join(this.options.to, p), block);
+								}
+								// не гуд
+								else {
+									console.log(`Error, path array length: ${way.length}`);
+								}
+							})
+						}
+					})
 				}
 			})
 
-			let phpDir = fs.readdirSync(this.options.to);
+			fse.copySync(`${__dirname}/YamFront.php`, path.resolve(this.options.to, 'includes/lib/YamFront.php'));
+
+			fs.writeFileSync(path.resolve(this.options.to, 'includes/head.php'), '<? include "lib/YamFront.php"; ?>', {flag: 'a'});
+
+			let phpDir = fse.readdirSync(this.options.to);
 
 			// console.log('\n');
+			const _this = this;
 
 			// перебираєм папку з пхп файлами
 			phpDir.forEach(item => {
-				let url = path.resolve(this.options.to, item)
+				php(item);
+			})
 
-				let stats = fs.statSync(url);
+			level2Paths.forEach(item => {
+				php(item);
+			})
+
+			function php(item) {
+				let url = _this.options.to + '/' + item;
+				// console.log(url);
+
+				let stats = fse.statSync(url);
 
 				// якщо файл, то
 				if(stats.isFile()) {
 					// console.log(url);
 
 					// читаєм файл
-					let content = fs.readFileSync(url).toString();
+					let content = fse.readFileSync(url).toString();
 
 					function convertPath(str, p1, offset, s) {
 						let p = p1.replace(/\.html$/, '.php');
@@ -97,27 +138,51 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 						return `<? include '${p}'; ?>`;
 					}
 
+					let timeStamps = content.match(/<!-- #TIME=\d*# -->/g);
+
+					timeStamps.map(stamp => {
+						// console.log(stamp);
+						let time = stamp.replace('<!-- #TIME=', '');
+						time = time.replace('# -->', '');
+
+						// console.log(time);
+
+						// замінюєм блок штмл імпорта на пхп-шний інклуд
+						// файл, який інклудиться, повинен автоматично згенеруватись у попередньому циклі
+
+						let regexp = new RegExp(`<!--#BEGIN-${time}#-->\\s<!--\\s(.+)\\s-->\\s[\\s\\S]*?<!--#END-${time}#-->`, 'g')
+						// console.log(regexp);
+						// content = content.replace(/<!--#BEGIN-#-->\s<!--\s(.+)\s-->\s[\s\S]*?<!--#END#-->/g, convertPath);
+						content = content.replace(regexp, convertPath);
+
+					})
+
+
+
 					// замінюєм блок штмл імпорта на пхп-шний інклуд
 					// файл, який інклудиться, повинен автоматично згенеруватись у попередньому циклі
-					content = content.replace(/<!--#BEGIN#-->\s<!--\s(.+)\s-->\s[\s\S]*?<!--#END#-->/g, convertPath);
+					// content = content.replace(/<!--#BEGIN#-->\s<!--\s(.+)\s-->\s[\s\S]*?<!--#END#-->/g, convertPath);
 
 					// форматуєм вихідний код гарненько
 					content = pretty(content, {
-						unformatted: ['code', 'pre', 'em', 'strong', 'span'],
+						// unformatted: ['code', 'pre', 'em', 'strong', 'span'],
 						indent_inner_html: true,
 						indent_char: '\t',
 						indent_size: 1,
 						sep: '\n'
 					})
+					// console.log(content);
 
 					// пишем у файл
-					fs.writeFileSync(url, content);
+					fse.writeFileSync(url, content);
 
 					// готово ;)
 					console.log(`File ${url} done!`);
 				}
 				console.log('\n');
-			})
+			}
+
+			console.log(level2Paths);
 		}
 		catch(e) {
 			console.error(e);
