@@ -7,7 +7,6 @@
 if (!class_exists("YamFront")) {
 
 	class YamFront {
-
 		function __construct($ar = array()) {
 			if (is_array($ar) && !empty($ar)) {
 				foreach ($ar as $key => $value) {
@@ -17,6 +16,9 @@ if (!class_exists("YamFront")) {
 
 			if (!defined("SITE_TEMPLATE_PATH")) {
 				$tmpPath = dirname(dirname(__DIR__));
+				if ( strrpos($_SERVER["WINDIR"], 'WINDOWS') !== false) {
+					$tmpPath = str_replace("\\", "/", $tmpPath);
+				}
 				$tmpPath = str_replace($_SERVER["DOCUMENT_ROOT"], "", $tmpPath);
 				$tmpPath .= "/";
 				define("SITE_TEMPLATE_PATH", $tmpPath);
