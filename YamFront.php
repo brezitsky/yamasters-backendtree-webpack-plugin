@@ -7,7 +7,7 @@
 if (!class_exists("YamFront")) {
 
 	class YamFront {
-		function construct($ar = array()) {
+		function __construct($ar = array()) {
 			if (is_array($ar) && !empty($ar)) {
 				foreach ($ar as $key => $value) {
 					$this->$key = $value;
