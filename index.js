@@ -135,7 +135,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					function convertPath(str, p1, offset, s) {
 						let p = p1.replace(/\.html$/, '.php');
 						p = p.replace('/includes', 'includes');
-						return `<? include '${p}'; ?>`;
+						return `<? $APPLICATION->YamFront->phpInclude('${p}'); ?>`;
 					}
 
 					let timeStamps = content.match(/<!-- #TIME=\d*# -->/g);
