@@ -1,6 +1,6 @@
 {
   "name": "yamasters-backendtree-webpack-plugin",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Webpack plugin for creation file tree for Yamasters backend team",
   "main": "index.js",
   "scripts": {
