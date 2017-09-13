@@ -4,6 +4,10 @@
 * Data: 15.08.2017
 * Time: 12:00
 */
+
+// ini_set("display_errors", "1");
+// error_reporting(E_ERROR);
+
 if (!class_exists("YamFront")) {
 
 	class YamFront {
@@ -15,7 +19,7 @@ if (!class_exists("YamFront")) {
 			}
 
 			if (!defined("SITE_TEMPLATE_PATH")) {
-				$tmpPath = dirname(dirname(__DIR));
+				$tmpPath = dirname(dirname(__DIR__));
 				if ( strrpos($_SERVER["WINDIR"], 'WINDOWS') !== false) {
 					$tmpPath = str_replace("\\", "/", $tmpPath);
 				}
@@ -26,8 +30,8 @@ if (!class_exists("YamFront")) {
 		}
 
 		public function phpInclude($path) {
+			global $APPLICATION;
 			$inclPath  = $_SERVER["DOCUMENT_ROOT"].SITE_TEMPLATE_PATH.$path;
-
 			if (file_exists($inclPath)) {
 				require $inclPath;
 			} else {
@@ -57,7 +61,6 @@ if (!class_exists("YamFront")) {
 }
 
 global $APPLICATION;
-
 if (!is_object($APPLICATION->YamFront)) {
 	$APPLICATION->YamFront = new YamFront(array());
 }

@@ -173,6 +173,11 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					})
 					// console.log(content);
 
+					// console.log(file);
+					content = content.replace(/href="bundles\//g, 'href="<?=SITE_TEMPLATE_PATH?>/bundles/');
+					content = content.replace(/src="bundles\//g, 'src="<?=SITE_TEMPLATE_PATH?>/bundles/');
+					content = content.replace(/\$APPLICATION->YamFront->phpInclude\('\/includes\/head\.php'\)/g, "include('includes/head.php')");
+
 					// пишем у файл
 					fse.writeFileSync(url, content);
 
