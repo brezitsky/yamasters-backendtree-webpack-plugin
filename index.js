@@ -82,8 +82,10 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 									block = block.replace(new RegExp(`<!-- #TIME=${time}# -->`, 'g'), '');
 									block = block.replace(new RegExp(`<!--#END-${time}#-->`, 'g'), '');
 
-									block = block.replace(/url\("img\//g, 'url("<?=SITE_TEMPLATE_PATH?>/img/');
-									block = block.replace(/url\('img\//g, "url('<?=SITE_TEMPLATE_PATH?>/img/");
+									block = block.replace(/url\("img\//g, 	'url("<?=SITE_TEMPLATE_PATH?>/img/');
+									block = block.replace(/url\('img\//g, 	"url('<?=SITE_TEMPLATE_PATH?>/img/");
+									block = block.replace(/url\(img\//g, 	"url(<?=SITE_TEMPLATE_PATH?>/img/");
+									block = block.replace(/src="img\//g, 	'src="<?=SITE_TEMPLATE_PATH?>/img/');
 
 									if(way[1]) {
 										level2Paths.push(p);
@@ -135,48 +137,63 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					function convertPath(str, p1, offset, s) {
 						let p = p1.replace(/\.html$/, '.php');
 						p = p.replace('/includes', 'includes');
-						return `<? $APPLICATION->YamFront->phpInclude('/${p}'); ?>`;
+						return `<include><? $APPLICATION->YamFront->phpInclude('/${p}'); ?></include>`;
 					}
 
 					let timeStamps = content.match(/<!-- #TIME=\d*# -->/g);
 
-					timeStamps.map(stamp => {
-						// console.log(stamp);
-						let time = stamp.replace('<!-- #TIME=', '');
-						time = time.replace('# -->', '');
+					if(timeStamps) {
+						timeStamps.map(stamp => {
+							// console.log(stamp);
+							let time = stamp.replace('<!-- #TIME=', '');
+							time = time.replace('# -->', '');
 
-						// console.log(time);
+							// console.log(time);
 
-						// замінюєм блок штмл імпорта на пхп-шний інклуд
-						// файл, який інклудиться, повинен автоматично згенеруватись у попередньому циклі
+							// замінюєм блок штмл імпорта на пхп-шний інклуд
+							// файл, який інклудиться, повинен автоматично згенеруватись у попередньому циклі
 
-						let regexp = new RegExp(`<!--#BEGIN-${time}#-->\\s<!--\\s(.+)\\s-->\\s[\\s\\S]*?<!--#END-${time}#-->`, 'g')
-						// console.log(regexp);
-						// content = content.replace(/<!--#BEGIN-#-->\s<!--\s(.+)\s-->\s[\s\S]*?<!--#END#-->/g, convertPath);
-						content = content.replace(regexp, convertPath);
+							let regexp = new RegExp(`<!--#BEGIN-${time}#-->\\s<!--\\s(.+)\\s-->\\s[\\s\\S]*?<!--#END-${time}#-->`, 'g')
+							// console.log(regexp);
+							// content = content.replace(/<!--#BEGIN-#-->\s<!--\s(.+)\s-->\s[\s\S]*?<!--#END#-->/g, convertPath);
+							content = content.replace(regexp, convertPath);
 
-					})
-
-
+						})
+					}
 
 					// замінюєм блок штмл імпорта на пхп-шний інклуд
 					// файл, який інклудиться, повинен автоматично згенеруватись у попередньому циклі
 					// content = content.replace(/<!--#BEGIN#-->\s<!--\s(.+)\s-->\s[\s\S]*?<!--#END#-->/g, convertPath);
 
-					// форматуєм вихідний код гарненько
-					content = pretty(content, {
-						// unformatted: ['code', 'pre', 'em', 'strong', 'span'],
-						indent_inner_html: true,
-						indent_char: '\t',
-						indent_size: 1,
-						sep: '\n'
-					})
+
 					// console.log(content);
 
 					// console.log(file);
 					content = content.replace(/href="bundles\//g, 'href="<?=SITE_TEMPLATE_PATH?>/bundles/');
 					content = content.replace(/src="bundles\//g, 'src="<?=SITE_TEMPLATE_PATH?>/bundles/');
 					content = content.replace(/\$APPLICATION->YamFront->phpInclude\('\/includes\/head\.php'\)/g, "include('includes/head.php')");
+
+					content = content.replace(
+						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>\/bundles\/(.*)\.bundle\.js"><\/script>/g,
+						'<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/$1.bundle.js"></script>\n<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>'
+					)
+
+
+					// форматуєм вихідний код гарненько
+					content = pretty(content, {
+						indent_inner_html: false,
+						indent_char: '\t',
+						indent_size: 1,
+						sep: '\n',
+						ocd: true
+					})
+
+					try {
+						content = content.replace(/<\/?include>/g,'');
+					}
+					catch(e) {
+						console.log(e);
+					}
 
 					// пишем у файл
 					fse.writeFileSync(url, content);
