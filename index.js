@@ -178,6 +178,11 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 						'<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/$1.bundle.js"></script>\n<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>'
 					)
 
+					content = content.replace(
+						'<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">',
+						'<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">\n<link href="<?=SITE_TEMPLATE_PATH?>/bundles/inline.css" rel="stylesheet">'
+					)
+
 
 					// форматуєм вихідний код гарненько
 					content = pretty(content, {
