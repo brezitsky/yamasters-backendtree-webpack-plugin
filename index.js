@@ -85,7 +85,10 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 									block = block.replace(/url\("img\//g, 	'url("<?=SITE_TEMPLATE_PATH?>/img/');
 									block = block.replace(/url\('img\//g, 	"url('<?=SITE_TEMPLATE_PATH?>/img/");
 									block = block.replace(/url\(img\//g, 	"url(<?=SITE_TEMPLATE_PATH?>/img/");
-									block = block.replace(/src="img\//g, 	'src="<?=SITE_TEMPLATE_PATH?>/img/');
+									block = block.replace(/src="img/g, 	'src="<?=SITE_TEMPLATE_PATH?>/');
+									block = block.replace(/src='img/g, 	"src='<?=SITE_TEMPLATE_PATH?>/");
+									block = block.replace(/src="video/g, 	'src="<?=SITE_TEMPLATE_PATH?>/');
+									block = block.replace(/src='video/g, 	"src='<?=SITE_TEMPLATE_PATH?>/");
 
 									if(way[1]) {
 										level2Paths.push(p);
@@ -174,8 +177,8 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					content = content.replace(/\$APPLICATION->YamFront->phpInclude\('\/includes\/head\.php'\)/g, "include('includes/head.php')");
 
 					content = content.replace(
-						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>\/bundles\/(.*)\.bundle\.js"><\/script>/g,
-						'<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/$1.bundle.js"></script>\n<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>'
+						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>\/bundles\/commons\.js"><\/script>/g,
+						'<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>\n<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/commons.js"></script>'
 					)
 
 					content = content.replace(
