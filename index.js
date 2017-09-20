@@ -85,10 +85,10 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 									block = block.replace(/url\("img\//g, 	'url("<?=SITE_TEMPLATE_PATH?>/img/');
 									block = block.replace(/url\('img\//g, 	"url('<?=SITE_TEMPLATE_PATH?>/img/");
 									block = block.replace(/url\(img\//g, 	"url(<?=SITE_TEMPLATE_PATH?>/img/");
-									block = block.replace(/src="img/g, 	'src="<?=SITE_TEMPLATE_PATH?>/');
-									block = block.replace(/src='img/g, 	"src='<?=SITE_TEMPLATE_PATH?>/");
-									block = block.replace(/src="video/g, 	'src="<?=SITE_TEMPLATE_PATH?>/');
-									block = block.replace(/src='video/g, 	"src='<?=SITE_TEMPLATE_PATH?>/");
+									block = block.replace(/src="img\//g, 	'src="<?=SITE_TEMPLATE_PATH?>/img/');
+									block = block.replace(/src='img\//g, 	"src='<?=SITE_TEMPLATE_PATH?>/img/");
+									block = block.replace(/src="video\//g, 	'src="<?=SITE_TEMPLATE_PATH?>/video/');
+									block = block.replace(/src='video\//g, 	"src='<?=SITE_TEMPLATE_PATH?>/video/");
 
 									if(way[1]) {
 										level2Paths.push(p);
