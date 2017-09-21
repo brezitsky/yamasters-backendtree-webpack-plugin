@@ -108,7 +108,13 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 
 			fse.copySync(`${__dirname}/YamFront.php`, path.resolve(this.options.to, 'includes/lib/YamFront.php'));
 
-			fs.writeFileSync(path.resolve(this.options.to, 'includes/head.php'), '<? include "lib/YamFront.php"; ?>', {flag: 'a'});
+
+
+			fs.writeFileSync(
+				path.resolve(this.options.to, 'includes/head.php'),
+				`<? include "lib/YamFront.php"; ?>\n${fs.readFileSync(path.resolve(this.options.to, 'includes/head.php'))}`,
+				{flag: 'w+'}
+			);
 
 			let phpDir = fse.readdirSync(this.options.to);
 
@@ -177,15 +183,27 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					content = content.replace(/\$APPLICATION->YamFront->phpInclude\('\/includes\/head\.php'\)/g, "include('includes/head.php')");
 
 					content = content.replace(
-						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>\/bundles\/commons\.js"><\/script>/g,
-						'<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>\n<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/commons.js"></script>'
+						'<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">',
+						''
 					)
 
 					content = content.replace(
-						'<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">',
-						'<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">\n<link href="<?=SITE_TEMPLATE_PATH?>/bundles/inline.css" rel="stylesheet">'
+						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>\/bundles\/commons\.js"><\/script>/g,
+						`<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">\n
+						<link href="<?=SITE_TEMPLATE_PATH?>/bundles/inline.css" rel="stylesheet">\n
+						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>\n
+						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/commons.js"></script>`
 					)
 
+					content = content.replace(
+						/<script type="text\/javascript" src/g,
+						'<script defer type="text\/javascript" src'
+					)
+
+					content = content.replace(
+						'</body>',
+						"<script>document.getElementById('body').classList.add('loaded')</script>\n</body>"
+					)
 
 					// форматуєм вихідний код гарненько
 					content = pretty(content, {
