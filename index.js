@@ -82,13 +82,13 @@ BackendTree27.prototype.apply = function(compiler) {
 									block = block.replace(new RegExp(`<!-- #TIME=${time}# -->`, 'g'), '');
 									block = block.replace(new RegExp(`<!--#END-${time}#-->`, 'g'), '');
 
-									block = block.replace(/url\("img\//g, 	'url("<?=SITE_TEMPLATE_PATH?>/img/');
-									block = block.replace(/url\('img\//g, 	"url('<?=SITE_TEMPLATE_PATH?>/img/");
-									block = block.replace(/url\(img\//g, 	"url(<?=SITE_TEMPLATE_PATH?>/img/");
-									block = block.replace(/src="img\//g, 	'src="<?=SITE_TEMPLATE_PATH?>/img/');
-									block = block.replace(/src='img\//g, 	"src='<?=SITE_TEMPLATE_PATH?>/img/");
-									block = block.replace(/src="video\//g, 	'src="<?=SITE_TEMPLATE_PATH?>/video/');
-									block = block.replace(/src='video\//g, 	"src='<?=SITE_TEMPLATE_PATH?>/video/");
+									block = block.replace(/url\("img\//g, 	'url("<?=SITE_TEMPLATE_PATH?>img/');
+									block = block.replace(/url\('img\//g, 	"url('<?=SITE_TEMPLATE_PATH?>img/");
+									block = block.replace(/url\(img\//g, 	"url(<?=SITE_TEMPLATE_PATH?>img/");
+									block = block.replace(/src="img\//g, 	'src="<?=SITE_TEMPLATE_PATH?>img/');
+									block = block.replace(/src='img\//g, 	"src='<?=SITE_TEMPLATE_PATH?>img/");
+									block = block.replace(/src="video\//g, 	'src="<?=SITE_TEMPLATE_PATH?>video/');
+									block = block.replace(/src='video\//g, 	"src='<?=SITE_TEMPLATE_PATH?>video/");
 
 									if(way[1]) {
 										level2Paths.push(p);
@@ -106,15 +106,15 @@ BackendTree27.prototype.apply = function(compiler) {
 				}
 			})
 
-			// fse.copySync(`${__dirname}/YamFront.php`, path.resolve(this.options.to, 'includes/lib/YamFront.php'));
+			fs.writeFileSync(
+				path.resolve(this.options.to, 'includes/head.php'),
+				`<? define("SITE_TEMPLATE_PATH", ""); ?>\n${fs.readFileSync(path.resolve(this.options.to, 'includes/head.php'))}`,
+				{flag: 'w+'}
+			);
 
-
-
-			// fs.writeFileSync(
-			// 	path.resolve(this.options.to, 'includes/head.php'),
-			// 	`<? include "lib/YamFront.php"; ?>\n${fs.readFileSync(path.resolve(this.options.to, 'includes/head.php'))}`,
-			// 	{flag: 'w+'}
-			// );
+			fs.writeFileSync(
+				path.resolve(this.options.to, 'bundles/commons.css'), '', {flag: 'w+'}
+			);
 
 			let phpDir = fse.readdirSync(this.options.to);
 
@@ -178,21 +178,34 @@ BackendTree27.prototype.apply = function(compiler) {
 					// console.log(content);
 
 					// console.log(file);
-					content = content.replace(/href="bundles\//g, 'href="<?=SITE_TEMPLATE_PATH?>/bundles/');
-					content = content.replace(/src="bundles\//g, 'src="<?=SITE_TEMPLATE_PATH?>/bundles/');
+					content = content.replace(/href="bundles\//g, 'href="<?=SITE_TEMPLATE_PATH?>bundles/');
+					content = content.replace(/src="bundles\//g, 'src="<?=SITE_TEMPLATE_PATH?>bundles/');
 					content = content.replace(/\$APPLICATION->YamFront->phpInclude\('\/includes\/head\.php'\)/g, "include('includes/head.php')");
 
 					content = content.replace(
-						'<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">',
+						'<link href="<?=SITE_TEMPLATE_PATH?>bundles/commons.css" rel="stylesheet">',
 						''
-					)
+					);
+
+					let templateStylesFile = '';
 
 					content = content.replace(
-						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>\/bundles\/commons\.js"><\/script>/g,
-						`<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">\n
-						${/*<link href="<?=SITE_TEMPLATE_PATH?>/bundles/inline.css" rel="stylesheet">\n*/}
-						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>\n
-						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/commons.js"></script>`
+						/\<link href\=\"\<\?\=SITE_TEMPLATE_PATH\?\>bundles\/(.*)\.css\" rel\=\"stylesheet\"\>/g,
+						function(str, p1, offset, s) {
+							templateStylesFile = str;
+							return '';
+						}
+					);
+
+					templateStylesFile = templateStylesFile.replace('<link', '<link onload="window.incrementResourceCounter()"');
+
+					/*<link href="<?=SITE_TEMPLATE_PATH?>bundles/inline.css" rel="stylesheet">\n*/
+					content = content.replace(
+						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>bundles\/commons\.js"><\/script>/g,
+						`<link onload="window.incrementResourceCounter()" href="<?=SITE_TEMPLATE_PATH?>bundles/commons.css" rel="stylesheet">\n` +
+						templateStylesFile + `\n
+						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>bundles/commons.js"></script>\n
+						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>bundles/inline.js"></script>`
 					)
 
 					content = content.replace(
@@ -200,10 +213,10 @@ BackendTree27.prototype.apply = function(compiler) {
 						'<script defer type="text\/javascript" src'
 					)
 
-					content = content.replace(
-						'</body>',
-						"<script>document.getElementById('body').classList.add('loaded')</script>\n</body>"
-					)
+					// content = content.replace(
+					// 	'</body>',
+					// 	"<script>document.getElementById('body').classList.add('loaded')</script>\n</body>"
+					// )
 
 					// форматуєм вихідний код гарненько
 					content = pretty(content, {
