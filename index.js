@@ -3,11 +3,11 @@ const fs = require('fs')
 const path = require('path')
 const pretty = require('pretty')
 
-function YamastersBackendtree(options) {
+function BackendTree27(options) {
 	this.options = options;
 }
 
-YamastersBackendtree.prototype.apply = function(compiler) {
+BackendTree27.prototype.apply = function(compiler) {
 	// let _this = this;
 
 	compiler.plugin('done', () => {
@@ -106,15 +106,15 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 				}
 			})
 
-			fse.copySync(`${__dirname}/YamFront.php`, path.resolve(this.options.to, 'includes/lib/YamFront.php'));
+			// fse.copySync(`${__dirname}/YamFront.php`, path.resolve(this.options.to, 'includes/lib/YamFront.php'));
 
 
 
-			fs.writeFileSync(
-				path.resolve(this.options.to, 'includes/head.php'),
-				`<? include "lib/YamFront.php"; ?>\n${fs.readFileSync(path.resolve(this.options.to, 'includes/head.php'))}`,
-				{flag: 'w+'}
-			);
+			// fs.writeFileSync(
+			// 	path.resolve(this.options.to, 'includes/head.php'),
+			// 	`<? include "lib/YamFront.php"; ?>\n${fs.readFileSync(path.resolve(this.options.to, 'includes/head.php'))}`,
+			// 	{flag: 'w+'}
+			// );
 
 			let phpDir = fse.readdirSync(this.options.to);
 
@@ -146,7 +146,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					function convertPath(str, p1, offset, s) {
 						let p = p1.replace(/\.html$/, '.php');
 						p = p.replace('/includes', 'includes');
-						return `<include><? $APPLICATION->YamFront->phpInclude('/${p}'); ?></include>`;
+						return `<include><? include('/${p}'); ?></include>`;
 					}
 
 					let timeStamps = content.match(/<!-- #TIME=\d*# -->/g);
@@ -190,7 +190,7 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 					content = content.replace(
 						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>\/bundles\/commons\.js"><\/script>/g,
 						`<link href="<?=SITE_TEMPLATE_PATH?>/bundles/commons.css" rel="stylesheet">\n
-						<link href="<?=SITE_TEMPLATE_PATH?>/bundles/inline.css" rel="stylesheet">\n
+						${/*<link href="<?=SITE_TEMPLATE_PATH?>/bundles/inline.css" rel="stylesheet">\n*/}
 						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/inline.js"></script>\n
 						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/bundles/commons.js"></script>`
 					)
@@ -241,4 +241,4 @@ YamastersBackendtree.prototype.apply = function(compiler) {
 	});
 };
 
-module.exports = YamastersBackendtree;
+module.exports = BackendTree27;
