@@ -82,13 +82,15 @@ BackendTree27.prototype.apply = function(compiler) {
 									block = block.replace(new RegExp(`<!-- #TIME=${time}# -->`, 'g'), '');
 									block = block.replace(new RegExp(`<!--#END-${time}#-->`, 'g'), '');
 
-									block = block.replace(/url\("img\//g, 	'url("<?=SITE_TEMPLATE_PATH?>img/');
-									block = block.replace(/url\('img\//g, 	"url('<?=SITE_TEMPLATE_PATH?>img/");
-									block = block.replace(/url\(img\//g, 	"url(<?=SITE_TEMPLATE_PATH?>img/");
-									block = block.replace(/src="img\//g, 	'src="<?=SITE_TEMPLATE_PATH?>img/');
-									block = block.replace(/src='img\//g, 	"src='<?=SITE_TEMPLATE_PATH?>img/");
-									block = block.replace(/src="video\//g, 	'src="<?=SITE_TEMPLATE_PATH?>video/');
-									block = block.replace(/src='video\//g, 	"src='<?=SITE_TEMPLATE_PATH?>video/");
+									block = block.replace(/url\("img\//g, 	'url("<?=RESOURCE_PATH?>img/');
+									block = block.replace(/url\('img\//g, 	"url('<?=RESOURCE_PATH?>img/");
+									block = block.replace(/url\(img\//g, 	"url(<?=RESOURCE_PATH?>img/");
+									block = block.replace(/src="img\//g, 	'src="<?=RESOURCE_PATH?>img/');
+									block = block.replace(/src='img\//g, 	"src='<?=RESOURCE_PATH?>img/");
+									block = block.replace(/src="video\//g, 	'src="<?=RESOURCE_PATH?>video/');
+									block = block.replace(/src='video\//g, 	"src='<?=RESOURCE_PATH?>video/");
+									block = block.replace(/xlink:href="img/g, 'xlink:href="<?=RESOURCE_PATH?>img');
+									block = block.replace(/xlink:href='img/g, "xlink:href='<?=RESOURCE_PATH?>img");
 
 									if(way[1]) {
 										level2Paths.push(p);
@@ -105,16 +107,6 @@ BackendTree27.prototype.apply = function(compiler) {
 					})
 				}
 			})
-
-			fs.writeFileSync(
-				path.resolve(this.options.to, 'includes/head.php'),
-				`<? define("SITE_TEMPLATE_PATH", ""); ?>\n${fs.readFileSync(path.resolve(this.options.to, 'includes/head.php'))}`,
-				{flag: 'w+'}
-			);
-
-			fs.writeFileSync(
-				path.resolve(this.options.to, 'bundles/commons.css'), '', {flag: 'w+'}
-			);
 
 			let phpDir = fse.readdirSync(this.options.to);
 
@@ -146,7 +138,7 @@ BackendTree27.prototype.apply = function(compiler) {
 					function convertPath(str, p1, offset, s) {
 						let p = p1.replace(/\.html$/, '.php');
 						p = p.replace('/includes', 'includes');
-						return `<include><? include('/${p}'); ?></include>`;
+						return `<include><? require(REQUIRE_PATH.'${p}'); ?></include>`;
 					}
 
 					let timeStamps = content.match(/<!-- #TIME=\d*# -->/g);
@@ -178,19 +170,19 @@ BackendTree27.prototype.apply = function(compiler) {
 					// console.log(content);
 
 					// console.log(file);
-					content = content.replace(/href="bundles\//g, 'href="<?=SITE_TEMPLATE_PATH?>bundles/');
-					content = content.replace(/src="bundles\//g, 'src="<?=SITE_TEMPLATE_PATH?>bundles/');
-					content = content.replace(/\$APPLICATION->YamFront->phpInclude\('\/includes\/head\.php'\)/g, "include('includes/head.php')");
+					content = content.replace(/href="bundles\//g, 'href="<?=RESOURCE_PATH?>bundles/');
+					content = content.replace(/src="bundles\//g, 'src="<?=RESOURCE_PATH?>bundles/');
+					content = content.replace(/\$APPLICATION->YamFront->phpInclude\('\/includes\/head\.php'\)/g, "require(REQUIRE_PATH.'includes/head.php')");
 
 					content = content.replace(
-						'<link href="<?=SITE_TEMPLATE_PATH?>bundles/commons.css" rel="stylesheet">',
+						'<link href="<?=RESOURCE_PATH?>bundles/commons.css" rel="stylesheet">',
 						''
 					);
 
 					let templateStylesFile = '';
 
 					content = content.replace(
-						/\<link href\=\"\<\?\=SITE_TEMPLATE_PATH\?\>bundles\/(.*)\.css\" rel\=\"stylesheet\"\>/g,
+						/\<link href\=\"\<\?\=RESOURCE_PATH\?\>bundles\/(.*)\.css\" rel\=\"stylesheet\"\>/g,
 						function(str, p1, offset, s) {
 							templateStylesFile = str;
 							return '';
@@ -199,13 +191,13 @@ BackendTree27.prototype.apply = function(compiler) {
 
 					templateStylesFile = templateStylesFile.replace('<link', '<link onload="window.incrementResourceCounter()"');
 
-					/*<link href="<?=SITE_TEMPLATE_PATH?>bundles/inline.css" rel="stylesheet">\n*/
+					/*<link href="<?=RESOURCE_PATH?>bundles/inline.css" rel="stylesheet">\n*/
 					content = content.replace(
-						/<script type="text\/javascript" src="<\?=SITE_TEMPLATE_PATH\?>bundles\/commons\.js"><\/script>/g,
-						`<link onload="window.incrementResourceCounter()" href="<?=SITE_TEMPLATE_PATH?>bundles/commons.css" rel="stylesheet">\n` +
+						/<script type="text\/javascript" src="<\?=RESOURCE_PATH\?>bundles\/commons\.js"><\/script>/g,
+						`<link onload="window.incrementResourceCounter()" href="<?=RESOURCE_PATH?>bundles/commons.css" rel="stylesheet">\n` +
 						templateStylesFile + `\n
-						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>bundles/commons.js"></script>\n
-						<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>bundles/inline.js"></script>`
+						<script type="text/javascript" src="<?=RESOURCE_PATH?>bundles/commons.js"></script>\n
+						<script type="text/javascript" src="<?=RESOURCE_PATH?>bundles/inline.js"></script>`
 					)
 
 					content = content.replace(
@@ -234,8 +226,14 @@ BackendTree27.prototype.apply = function(compiler) {
 						console.log(e);
 					}
 
-					// пишем у файл
-					fse.writeFileSync(url, content);
+					if(_this.options.mode === 'denwer') {
+						// пишем у файл
+						fse.writeFileSync(url, `<?\n\tdefine("RESOURCE_PATH", "");\n\tdefine("REQUIRE_PATH", "");\n?>\n${content}`);
+					}
+					else if (_this.options.mode === 'production') {
+						// пишем у файл
+						fse.writeFileSync(url, `<?\n\trequire($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");\n\tdefine("RESOURCE_PATH", SITE_TEMPLATE_PATH."/new-front/");\n\tdefine("REQUIRE_PATH", $_SERVER["DOCUMENT_ROOT"].SITE_TEMPLATE_PATH."/new-front/");\n?>\n${content}`);
+					}
 
 					// готово ;)
 					console.log(`File ${url} done!`);
